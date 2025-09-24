@@ -1,0 +1,53 @@
+/* Стилі для всієї сторінки */
+body {
+   font-family: Arial, sans-serif;
+   line-height: 1.6;
+   margin: 0;
+   padding: 20px;
+   background-color: #f4f4f4;
+   color: #333;
+}
+
+/* Стилі для заголовків */
+header h1 {
+   color: #2c3e50;
+   text-align: center;
+   border-bottom: 3px solid #3498db;
+   padding-bottom: 10px;
+}
+
+h2 {
+   color: #2980b9;
+   margin-top: 25px;
+   border-left: 5px solid #3498db;
+   padding-left: 10px;
+}
+
+/* Стилі для абзаців */
+p {
+   text-align: justify;
+   margin-bottom: 15px;
+}
+
+/* Стилі для списку */
+ul {
+   background-color: #ecf0f1;
+   padding: 15px 20px;
+   border-radius: 5px;
+}
+
+ul li {
+   margin-bottom: 8px;
+}
+
+/* Стилі для таблиці */
+table {
+   width: 100%;
+   border-collapse: collapse;
+   margin: 20px 0;
+   background-color: white;
+   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+th, td {
+   padding: 12px;}

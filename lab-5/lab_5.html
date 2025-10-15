@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TechStore — Інтернет-магазин техніки</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .product-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 250px;
+      padding: 16px;
+      text-align: center;
+    }
+    .product-card img {
+      max-width: 100%;
+      height: 140px;
+      object-fit: contain;
+      margin-bottom: 12px;
+    }
+    .product-card h3 {
+      margin: 10px 0;
+      font-size: 1.2em;
+    }
+    .product-card p.price {
+      font-weight: bold;
+      color: #27ae60;
+      font-size: 1.1em;
+    }
+    .product-card button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .product-card button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🛒 TechStore — Сучасна техніка для кожного</h1>
+    <p>Найкращі пропозиції на ноутбуки, смартфони та планшети</p>
+  </header>
+
+  <main>
+    <div class="products" id="products-container">
+      <!-- Товари будуть додані через JavaScript -->
+    </div>
+  </main>
+
+  <script>
+    // ============= 1. Клас Product (базовий) =============
+    class Product {
+      constructor(id, name, price, category, image = '📦') {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.category = category;
+        this.image = image;
+      }
+
+      // Метод для форматування ціни
+      getFormattedPrice() {
+        return `${this.price} грн`;
+      }
+
+      // Метод для відображення в HTML
+      toHTML() {
+        const div = document.createElement('div');
+        div.className = 'product-card';
+        div.innerHTML = `
+          <img src="${this.image}" alt="${this.name}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23ccc%22 stroke-width=%222%22><rect x=%223%22 y=%223%22 width=%2218%22 height=%2218%22 rx=%222%22 ry=%222%22></rect></svg>'">
+          <h3>${this.name}</h3>
+          <p class="price">${this.getFormattedPrice()}</p>
+          <p>Категорія: ${this.category}</p>
+          <button onclick="addToCart(${this.id})">Додати до кошика</button>
+        `;
+        return div;
+      }
+    }
+
+    // ============= 2. Наслідування: Laptop, Smartphone =============
+    class Laptop extends Product {
+      constructor(id, name, price, ram, storage) {
+        super(id, name, price, 'Ноутбук');
+        this.ram = ram;
+        this.storage = storage;
+      }
+
+      getInfo() {
+        return `RAM: ${this.ram} ГБ, Пам'ять: ${this.storage} ГБ`;
+      }
+
+      toHTML() {
+        const div = super.toHTML();
+        const info = document.createElement('p');
+        info.textContent = this.getInfo();
+        div.insertBefore(info, div.querySelector('button'));
+        return div;
+      }
+    }
+
+    class Smartphone extends Product {
+      constructor(id, name, price, camera, battery) {
+        super(id, name, price, 'Смартфон');
+        this.camera = camera;
+        this.battery = battery;
+      }
+
+      getInfo() {
+        return `Камера: ${this.camera} МП, Акумулятор: ${this.battery} мА·год`;
+      }
+
+      toHTML() {
+        const div = super.toHTML();
+        const info = document.createElement('p');
+        info.textContent = this.getInfo();
+        div.insertBefore(info, div.querySelector('button'));
+        return div;
+      }
+    }
+
+    // ============= 3. Масив товарів =============
+    const products = [
+      new Laptop(1, 'Dell XPS 13', 25000, 16, 512),
+      new Laptop(2, 'MacBook Air M2', 35000, 8, 256),
+      new Smartphone(3, 'iPhone 15', 28000, 48, 3349),
+      new Smartphone(4, 'Samsung Galaxy S24', 24000, 50, 4000),
+    ];
+
+    // ============= 4. Прототип: додатковий метод для масиву =============
+    Array.prototype.renderTo = function(containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
+      this.forEach(product => {
+        container.appendChild(product.toHTML());
+      });
+    };
+
+    // ============= 5. Функція "додати до кошика" =============
+    window.addToCart = function(productId) {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        alert(`✅ "${product.name}" додано до кошика!`);
+      }
+    };
+
+    // ============= 6. Ініціалізація сторінки =============
+    document.addEventListener('DOMContentLoaded', () => {
+      products.renderTo('products-container');
+    });
+  </script>
+</body>
+</html>

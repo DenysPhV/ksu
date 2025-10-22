@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TechStore (Лаб 6) — DOM та Події</title>
+  <style>
+    /* Базові стилі з lab_5.html */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .product-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 250px;
+      padding: 16px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+    .product-card img {
+      max-width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    .product-card h3 {
+      font-size: 1.1rem;
+      color: #34495e;
+      margin-bottom: 8px;
+    }
+    .product-card p {
+      color: #7f8c8d;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+    .product-card .price {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #e74c3c;
+      margin-bottom: 16px;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    /* === НОВІ СТИЛІ ДЛЯ ЛАБ 6 (Кошик) === */
+    footer {
+      margin-top: 40px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    #cart-summary h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+    #cart-summary ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 20px;
+    }
+    #cart-summary li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #ecf0f1;
+      font-size: 1rem;
+    }
+    #cart-summary li:last-child {
+      border-bottom: none;
+    }
+    #cart-summary .item-details {
+      color: #34495e;
+    }
+    #cart-summary .item-quantity {
+      color: #7f8c8d;
+      font-size: 0.9rem;
+    }
+    #cart-summary .remove-btn {
+      background-color: #e74c3c;
+      color: white;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+    }
+    #cart-summary .remove-btn:hover {
+      background-color: #c0392b;
+    }
+    #cart-summary h3 {
+      text-align: right;
+      color: #2c3e50;
+      margin-top: 16px;
+      font-size: 1.3rem;
+    }
+    #cart-summary p {
+      text-align: center;
+      color: #7f8c8d;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>TechStore</h1>
+    <p>Інтернет-магазин найкращої техніки</p>
+  </header>
+
+  <main>
+    <h2>Наші товари</h2>
+    <div class="products" id="product-list">
+      </div>
+  </main>
+
+  <footer id="cart-summary">
+    <h2>Кошик</h2>
+    <p>Кошик порожній.</p>
+    </footer>
+
+  <script>
+    // ============= 1. Базовий клас "Товар" =============
+    class Product {
+      constructor(id, name, price) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+      }
+
+      // Метод для генерації HTML-картки товару
+      toHTML() {
+        const div = document.createElement('div');
+        div.className = 'product-card';
+        div.dataset.id = this.id; // [cite: 362]
+        
+        div.innerHTML = `
+          <img src="https://via.placeholder.com/200x150?text=${encodeURIComponent(this.name)}" alt="${this.name}">
+          <h3>${this.name}</h3>
+          <p class="price">${this.price.toLocaleString()} грн.</p>
+          <button>Купити</button>
+        `; // 
+
+        // === ЗМІНА ДЛЯ ЛАБ 6 ===
+        // Знаходимо кнопку та додаємо обробник події
+        const button = div.querySelector('button'); // 
+        button.addEventListener('click', () => { // 
+          addToCart(this.id);
+        });
+
+        return div;
+      }
+    }
+
+    // ============= 2. Класи-нащадки =============
+    class Laptop extends Product {
+      constructor(id, name, price, ram, storage) {
+        super(id, name, price);
+        this.ram = ram;
+        this.storage = storage;
+      }
+
+      getInfo() {
+        return `RAM: ${this.ram} ГБ, SSD: ${this.storage} ГБ`;
+      }
+
+      // Перевизначення методу для додавання інфо
+      toHTML() {
+        const div = super.toHTML();
+        const info = document.createElement('p');
+        info.textContent = this.getInfo();
+        // Вставляємо інфо перед кнопкою
+        div.insertBefore(info, div.querySelector('button')); // [cite: 389]
+        return div;
+      }
+    }
+
+    class Smartphone extends Product {
+      constructor(id, name, price, camera, battery) {
+        super(id, name, price);
+        this.camera = camera;
+        this.battery = battery;
+      }
+
+      getInfo() {
+        return `Камера: ${this.camera} МП, Акумулятор: ${this.battery} мА·год`;
+      }
+
+      toHTML() {
+        const div = super.toHTML();
+        const info = document.createElement('p');
+        info.textContent = this.getInfo();
+        div.insertBefore(info, div.querySelector('button'));
+        return div;
+      }
+    }
+
+    // ============= 3. Масив товарів =============
+    const products = [
+      new Laptop(1, 'Dell XPS 13', 32000, 16, 512),
+      new Laptop(2, 'MacBook Air M2', 45000, 8, 256),
+      new Smartphone(3, 'iPhone 15', 38000, 48, 3349),
+      new Smartphone(4, 'Samsung Galaxy S24', 34000, 50, 4000),
+      new Laptop(5, 'Asus Zenbook', 28500, 16, 1024),
+      new Smartphone(6, 'Google Pixel 8', 29000, 50, 4575),
+    ];
+
+    // ============= 4. Прототип: рендер масиву =============
+    Array.prototype.renderTo = function(containerId) {
+      const container = document.getElementById(containerId); // 
+      if (!container) return;
+      container.innerHTML = ''; // 
+      this.forEach(product => {
+        container.append(product.toHTML()); // 
+      });
+    };
+
+    // ============= 5. ЛОГІКА КОШИКА (Нове в Лаб 6) =============
+    let cart = [];
+
+    /**
+     * Додає товар до кошика або збільшує його кількість
+     */
+    function addToCart(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+
+      const cartItem = cart.find(item => item.id === productId);
+
+      if (cartItem) {
+        cartItem.quantity++;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+
+      updateCartSummary(); // Оновлюємо DOM
+    }
+
+    /**
+     * Видаляє товар з кошика
+     */
+    function removeFromCart(productId) {
+      cart = cart.filter(item => item.id !== productId);
+      updateCartSummary(); // Оновлюємо DOM
+    }
+
+    /**
+     * Оновлює відображення кошика в DOM
+     */
+    function updateCartSummary() {
+      const container = document.getElementById('cart-summary');
+      container.innerHTML = ''; // Очищуємо контейнер 
+
+      const title = document.createElement('h2'); // 
+      title.textContent = 'Кошик'; // 
+      container.append(title); // 
+
+      if (cart.length === 0) {
+        const emptyText = document.createElement('p');
+        emptyText.textContent = 'Кошик порожній.';
+        container.append(emptyText);
+        return;
+      }
+
+      const ul = document.createElement('ul');
+      let totalPrice = 0;
+
+      cart.forEach(item => {
+        const li = document.createElement('li');
+        
+        const details = document.createElement('span');
+        details.className = 'item-details';
+        details.textContent = `${item.name} (${item.quantity} шт.) - ${(item.price * item.quantity).toLocaleString()} грн.`;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Видалити';
+        removeBtn.className = 'remove-btn';
+        removeBtn.addEventListener('click', () => removeFromCart(item.id)); // 
+
+        li.append(details);
+        li.append(removeBtn);
+        ul.append(li);
+
+        totalPrice += item.price * item.quantity;
+      });
+
+      container.append(ul);
+
+      const totalEl = document.createElement('h3');
+      totalEl.textContent = `Загальна сума: ${totalPrice.toLocaleString()} грн.`;
+      container.append(totalEl);
+    }
+
+    // ============= 6. Ініціалізація =============
+    function init() {
+      // Рендеримо товари
+      products.renderTo('product-list');
+    }
+
+    // Запускаємо init, коли DOM завантажено
+    document.addEventListener('DOMContentLoaded', init); // [cite: 535]
+
+  </script>
+</body>
+</html>
